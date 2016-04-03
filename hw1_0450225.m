@@ -1,6 +1,10 @@
 #! OCTAVE-INTERPRETER-NAME -qf
 clear;
 
-run train.m;
-run test.m;
-run prediction;
+addpath ./train
+train_ml;
+rmpath ./train
+addpath ./test
+test_ml;
+prediction_ml;
+rmpath ./test
