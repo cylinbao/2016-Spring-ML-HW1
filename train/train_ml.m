@@ -59,9 +59,11 @@ for idx1=1:1:data_size
 	for idx2=1:1:block_num(1)
 		for idx3=1:1:block_num(2)
 			data = X_train(idx1*step, 1:2);
+			addpath ~/Spring_2016/ML/2016_ML_HW1_v4/
 			design_mat(idx1, (idx2-1)*block_num(2)+idx3) = myGaussian(data(1), data(2), ...
 			mean_x1(idx2, idx3), mean_x2(idx2, idx3), ...
 			var_x1(idx2, idx3), var_x2(idx2, idx3));
+			rmpath ~/Spring_2016/ML/2016_ML_HW1_v4/
 		end
 	end
 end
@@ -69,4 +71,28 @@ rmpath ../
 
 w_ml = inv(design_mat' * design_mat) * (design_mat') * (T_train(1:data_size));
 
-save -append -mat "train_result.mat" mean_x1 mean_x2 var_x1 var_x2 w_ml
+save -append -mat "~/Spring_2016/ML/2016_ML_HW1_v4/train/train_result.mat" ...
+mean_x1 mean_x2 var_x1 var_x2 w_ml;
+
+%below part is computing w0
+acc_md = 0;
+for idm1=1:1:block_num(1)
+	for idm2=1:1:block_num(2)
+		acc_data = 0;
+		for idd=1:1:data_size
+			data = X_train(idd*step, 1:2);
+			addpath ~/Spring_2016/ML/2016_ML_HW1_v4/
+			temp = myGaussian(data(1), data(2), mean_x1(idm1), mean_x2(idm2), ...
+							var_x1(idm1), var_x2(idm2));
+			rmpath ~/Spring_2016/ML/2016_ML_HW1_v4/
+			acc_data += temp;
+		end
+		acc_md += w_ml((idm1-1)*block_num(2)+idm2)*acc_data/data_size;
+	end
+end
+
+acc_t = ones(1,data_size)*T_train(1:data_size);
+
+w0 = acc_t/data_size - acc_md;
+
+save -append -mat "~/Spring_2016/ML/2016_ML_HW1_v4/train/train_result.mat" w0;
