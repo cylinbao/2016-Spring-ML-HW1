@@ -5,6 +5,6 @@ addpath ./train
 train_ml;
 rmpath ./train
 addpath ./test
-test_ml;
 prediction_ml;
+test_ml;
 rmpath ./test
