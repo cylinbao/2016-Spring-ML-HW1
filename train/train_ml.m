@@ -3,96 +3,45 @@ clear;
 
 block_num = [14, 18];
 block_size = 50;
-real_size = 50000;
 data_size = 50000;
-design_mat = zeros(data_size, block_num(1)*block_num(2));
-acc_x1 = zeros(block_num(1), block_num(2));
-acc_x2 = zeros(block_num(1), block_num(2));
-acc_x1_sq = zeros(block_num(1), block_num(2));
-acc_x2_sq = zeros(block_num(1), block_num(2));
-count_x1 = zeros(block_num(1), block_num(2));
-count_x2 = zeros(block_num(1), block_num(2));
-mean_x1 = zeros(block_num(1), block_num(2));
-mean_x2 = zeros(block_num(1), block_num(2));
-var_x1 = zeros(block_num(1), block_num(2));
-var_x2 = zeros(block_num(1), block_num(2));
 
 train_data = load('~/Spring_2016/ML/2016_ML_HW1_v4/data/Train_data_hw1.mat');
-X_train = train_data.X_train;
-T_train = train_data.T_train;
+data = train_data.X_train(1:data_size, :);
+T_train = train_data.T_train(1:data_size, :);
 x1_bound = train_data.x1_bound;
 x2_bound = train_data.x2_bound;
 
-step = real_size/data_size;
+idx1_vec = ceil((data(:, 1) .- (x1_bound(1)-0.01))*20/block_size);
+idx2_vec = ceil((data(:, 2) .- (x2_bound(1)-0.01))*20/block_size);
+count_x1 = zeros(1, block_num(1) * block_num(2));
+count_x2 = zeros(1, block_num(1) * block_num(2));
+% label the data by the idx of the block it belong to
+for idx=1:1:data_size
+	idx1 = idx1_vec(idx);	
+	idx2 = idx2_vec(idx);	
+
+	label_x1(end+1, ((idx1-1)*block_num(2)+idx2)) = data(idx, 1);
+	label_x2(end+1, ((idx1-1)*block_num(2)+idx2)) = data(idx, 2);
+
+	count_x1((idx1-1)*block_num(2)+idx2) += 1;
+	count_x2((idx1-1)*block_num(2)+idx2) += 1;
+end
+
 % calculate the mean and var of each blocks
-for i=1:1:data_size
-	data = X_train(i*step, 1:2);
-	index1 = uint32((data(1) - x1_bound(1))*20/block_size);
-	index2 = uint32((data(2) - x2_bound(1))*20/block_size);
+mean_x1 = sum(label_x1) ./ count_x1;
+mean_x2 = sum(label_x2) ./ count_x2;
 
-	if index1 == 0
-		index1 = 1;
-	end
-	if index2 == 0
-		index2 = 1;
-	end
-	
-	count_x1(index1, index2) += 1;
-	count_x2(index1, index2) += 1;
+var_x1 = (sum(label_x1.^2) ./ count_x1) .- (mean_x1.^2);
+var_x2 = (sum(label_x2.^2) ./ count_x2) .- (mean_x2.^2);
 
-	acc_x1(index1, index2) += data(1);
-	acc_x2(index1, index2) += data(2);
-
-	acc_x1_sq(index1, index2) += data(1)^2;
-	acc_x2_sq(index1, index2) += data(2)^2;
-end
-
-mean_x1 = acc_x1 ./ count_x1;
-mean_x2 = acc_x2 ./ count_x2;
-
-var_x1 = (acc_x1_sq ./ count_x1) .- mean_x1.^2;
-var_x2 = (acc_x2_sq ./ count_x2) .- mean_x2.^2;
-
-addpath ../
 % calculate the design matrix
-for idx1=1:1:data_size
-	for idx2=1:1:block_num(1)
-		for idx3=1:1:block_num(2)
-			data = X_train(idx1*step, 1:2);
-			addpath ~/Spring_2016/ML/2016_ML_HW1_v4/
-			design_mat(idx1, (idx2-1)*block_num(2)+idx3) = myGaussian(data(1), data(2), ...
-			mean_x1(idx2, idx3), mean_x2(idx2, idx3), ...
-			var_x1(idx2, idx3), var_x2(idx2, idx3));
-			rmpath ~/Spring_2016/ML/2016_ML_HW1_v4/
-		end
-	end
-end
-rmpath ../
+design_mat = exp(-((data(:, 1) - mean_x1).^2./(2*var_x1)) ...
+								-((data(:, 2) - mean_x2).^2./(2*var_x2)));
 
-w_ml = inv(design_mat' * design_mat) * (design_mat') * (T_train(1:data_size));
+% calculate the w for each models and the w0
+w_ml = inv(design_mat' * design_mat) * (design_mat') * (T_train);
+w0 = mean(T_train) - (mean(design_mat) * w_ml);
 
+% save matrix into file train_result
 save -append -mat "~/Spring_2016/ML/2016_ML_HW1_v4/train/train_result.mat" ...
-mean_x1 mean_x2 var_x1 var_x2 w_ml;
-
-%below part is computing w0
-acc_md = 0;
-for idm1=1:1:block_num(1)
-	for idm2=1:1:block_num(2)
-		acc_data = 0;
-		for idd=1:1:data_size
-			data = X_train(idd*step, 1:2);
-			addpath ~/Spring_2016/ML/2016_ML_HW1_v4/
-			temp = myGaussian(data(1), data(2), mean_x1(idm1), mean_x2(idm2), ...
-							var_x1(idm1), var_x2(idm2));
-			rmpath ~/Spring_2016/ML/2016_ML_HW1_v4/
-			acc_data += temp;
-		end
-		acc_md += w_ml((idm1-1)*block_num(2)+idm2)*acc_data/data_size;
-	end
-end
-
-acc_t = ones(1,data_size)*T_train(1:data_size);
-
-w0 = acc_t/data_size - acc_md;
-
-save -append -mat "~/Spring_2016/ML/2016_ML_HW1_v4/train/train_result.mat" w0;
+mean_x1 mean_x2 var_x1 var_x2 w_ml w0;
