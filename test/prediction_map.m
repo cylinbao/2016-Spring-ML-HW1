@@ -24,3 +24,6 @@ prediction_map_mat;
 clf;
 colormap('default');
 contour(prediction_map_mat);
+title("MAP approach");
+xlabel("Longitude");
+ylabel("Latitude");

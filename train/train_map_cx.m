@@ -7,6 +7,7 @@ real_size = 50000;
 round_total = 10;
 round_size = real_size / round_total;
 data_size = real_size - round_size;
+lambda = 0.7;
 
 train_data = load('~/Spring_2016/ML/2016_ML_HW1_v4/data/Train_data_hw1.mat');
 data = train_data.X_train(1:real_size, :);
@@ -61,8 +62,9 @@ design_mat = exp(-((data_cx(:, 1) - mean_x1(rnd, :)).^2./(2*var_x1(rnd, :))) ...
 								-((data_cx(:, 2) - mean_x2(rnd, :)).^2./(2*var_x2(rnd, :))));
 
 % calculate the w for each models and the w0
-w_ml(:, end+1) = inv(design_mat' * design_mat) * (design_mat') * (T_train_cx);
-w0(end+1) = mean(T_train_cx) - (mean(design_mat) * w_ml(:, rnd));
+diagmtx = diag(ones(1, block_num(1)*block_num(2)));
+w_map(:, end+1) = inv(lambda*diagmtx + design_mat'*design_mat)*(design_mat')*(T_train_cx);
+w0(end+1) = mean(T_train_cx) - (mean(design_mat) * w_map(:, rnd));
 
 end
 
@@ -71,9 +73,9 @@ mean_x1_cx = mean(mean_x1);
 mean_x2_cx = mean(mean_x2);
 var_x1_cx = mean(var_x1);
 var_x2_cx = mean(var_x2);
-w_ml_cx = mean(w_ml);
-w0_ml_cx = mean(w0);
+w_map_cx = mean(w_map);
+w0_map_cx = mean(w0);
 
 % save matrix into file train_result
 save -append -mat "~/Spring_2016/ML/2016_ML_HW1_v4/train/train_result.mat" ...
-mean_x1_cx mean_x2_cx var_x1_cx var_x2_cx w_ml_cx w0_ml_cx;
+mean_x1_cx mean_x2_cx var_x1_cx var_x2_cx w_map_cx w0_map_cx;
