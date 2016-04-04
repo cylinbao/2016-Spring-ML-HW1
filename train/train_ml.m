@@ -40,8 +40,8 @@ design_mat = exp(-((data(:, 1) - mean_x1).^2./(2*var_x1)) ...
 
 % calculate the w for each models and the w0
 w_ml = inv(design_mat' * design_mat) * (design_mat') * (T_train);
-w0 = mean(T_train) - (mean(design_mat) * w_ml);
+w0_ml = mean(T_train) - (mean(design_mat) * w_ml);
 
 % save matrix into file train_result
 save -append -mat "~/Spring_2016/ML/2016_ML_HW1_v4/train/train_result.mat" ...
-mean_x1 mean_x2 var_x1 var_x2 w_ml w0;
+mean_x1 mean_x2 var_x1 var_x2 design_mat w_ml w0_ml;

@@ -4,7 +4,7 @@ clear;
 block_num = [14, 18];
 block_size = 50;
 real_size = 50000;
-round_total = 10;
+round_total = 2;
 round_size = real_size / round_total;
 data_size = real_size - round_size;
 

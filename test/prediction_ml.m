@@ -11,10 +11,10 @@ mean_x2 = train_result.mean_x2;
 var_x1 = train_result.var_x1;
 var_x2 = train_result.var_x2;
 w_ml = train_result.w_ml;
-w0 = train_result.w0;
+w0_ml = train_result.w0_ml;
 
 result = (exp(-((data(:, 1) - mean_x1).^2./(2*var_x1)) ...
-					-((data(:, 2) - mean_x2).^2./(2*var_x2)))*w_ml + w0) .* (~data(:, 3));
+					-((data(:, 2) - mean_x2).^2./(2*var_x2)))*w_ml + w0_ml) .* (~data(:, 3));
 
 prediction_ml_mat = flipud(reshape(result, 886, 691)');
 
