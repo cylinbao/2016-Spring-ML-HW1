@@ -11,15 +11,19 @@ w_ml = train_result.w_ml;
 w0_ml = train_result.w0_ml;
 w_map = train_result.w_map;
 w0_map = train_result.w0_map;
+w_baye = train_result.w_baye;
+w0_baye = train_result.w0_baye;
 
 cal_mtx(:, 1:2) = data(:, 1:2);
 cal_mtx(:, 3:4) = data(:, 1:2).^2;
 sum_mse_ml = (~data(:, 3))' * ((cal_mtx*w_ml + w0_ml - t_data).^2);
 sum_mse_map = (~data(:, 3))' * ((cal_mtx*w_map + w0_map - t_data).^2);
+sum_mse_baye = (~data(:, 3))' * ((cal_mtx*w_baye + w0_baye - t_data).^2);
 
 land_num = sum(data(:,3)==0);
 mse_ml = sqrt(sum_mse_ml/land_num)
 mse_map = sqrt(sum_mse_map/land_num)
+mse_baye = sqrt(sum_mse_baye/land_num)
 
 save -append -mat "~/Spring_2016/ML/2016_ML_HW1_v4/target/target_result.mat" ...
-mse_ml mse_map;
+mse_ml mse_map mse_baye;
