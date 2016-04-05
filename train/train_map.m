@@ -4,7 +4,7 @@ clear;
 block_num = [14, 18];
 block_size = 50;
 data_size = 50000;
-lambda = 0.7;
+lambda = 50;
 
 train_data = load('~/Spring_2016/ML/2016_ML_HW1_v4/data/Train_data_hw1.mat');
 data = train_data.X_train(1:data_size, :);

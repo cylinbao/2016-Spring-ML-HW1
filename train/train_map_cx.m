@@ -7,7 +7,7 @@ real_size = 50000;
 round_total = 10;
 round_size = real_size / round_total;
 data_size = real_size - round_size;
-lambda = 0.7;
+lambda = 15;
 
 train_data = load('~/Spring_2016/ML/2016_ML_HW1_v4/data/Train_data_hw1.mat');
 data = train_data.X_train(1:real_size, :);
